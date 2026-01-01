@@ -25,9 +25,9 @@ function getSizeClasses(size: 'sm' | 'md' | 'lg' | 'xl'): { container: string; t
     case 'md':
       return { container: 'w-16 h-16', text: 'text-2xl' };
     case 'lg':
-      return { container: 'w-32 h-32', text: 'text-5xl' };
+      return { container: 'w-[min(8rem,15vw,18vh)] h-[min(8rem,15vw,18vh)]', text: 'text-[min(3rem,5vw,6vh)]' };
     case 'xl':
-      return { container: 'w-64 h-64 md:w-80 md:h-80', text: 'text-8xl md:text-9xl' };
+      return { container: 'w-[min(16rem,25vw,25vh)] h-[min(16rem,25vw,25vh)]', text: 'text-[min(6rem,8vw,8vh)]' };
   }
 }
 

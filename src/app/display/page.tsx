@@ -1,10 +1,17 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSocket } from '@/hooks/useSocket';
 import { BingoBall } from '@/components/BingoBall';
 import { NumberGrid } from '@/components/NumberGrid';
 import { WinnerCelebration } from '@/components/WinnerCelebration';
+
+const BingoBall3D = dynamic(
+  () => import('@/components/BingoBall3D').then((mod) => mod.BingoBall3D),
+  { ssr: false }
+);
 
 const backgroundBalls = [
   { id: 1, number: 5, size: 'lg' as const, x: '10%', y: '20%', duration: 15 },
@@ -24,10 +31,20 @@ const backgroundBalls = [
 export default function DisplayPage() {
   const { gameState, isConnected } = useSocket();
   const { phase, currentNumber, calledNumbers } = gameState;
+  const previousNumberRef = useRef<number | null>(null);
 
   const historyNumbers = calledNumbers
     .filter((n) => n !== currentNumber)
     .slice(-5);
+
+  useEffect(() => {
+    if (currentNumber !== null) {
+      const timer = setTimeout(() => {
+        previousNumberRef.current = currentNumber;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [currentNumber]);
 
   if (!isConnected) {
     return (
@@ -100,56 +117,54 @@ export default function DisplayPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center min-h-screen gap-12"
+            className="relative flex flex-col items-center justify-between h-screen py-4 overflow-hidden"
           >
-            <div className="relative flex items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="absolute top-4 right-4 md:top-8 md:right-8 px-4 py-2 md:px-8 md:py-4 bg-white/60 backdrop-blur-md rounded-full shadow-lg border border-white/50 z-20"
+            >
+              <p className="text-3xl md:text-6xl font-bold text-amber-900 tabular-nums">
+                <span className="text-amber-600 font-black">{calledNumbers.length}</span>
+                <span className="text-amber-400/80">/</span>
+                <span className="text-amber-800/60">90</span>
+              </p>
+            </motion.div>
+
+            <div className="flex-1 relative flex items-center justify-center min-h-0">
               <motion.div
-                className="absolute inset-0 bg-amber-400/20 blur-3xl rounded-full"
-                animate={{ scale: [1.4, 1.6, 1.4], opacity: [0.3, 0.6, 0.3] }}
+                className="absolute w-full h-full max-w-[800px] max-h-[800px] bg-amber-400/20 blur-3xl rounded-full"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
-              <div className="drop-shadow-2xl scale-125 transform transition-transform">
-                <BingoBall number={currentNumber} size="xl" animate />
-              </div>
+              <BingoBall3D
+                number={currentNumber}
+                previousNumber={previousNumberRef.current}
+              />
             </div>
 
-            <div className="h-32 flex items-center justify-center gap-6 perspective-500">
+            <div className="flex-shrink-0 h-[25vh] flex items-center justify-center gap-[2vw] md:gap-[3vw] perspective-500 px-4">
               <AnimatePresence mode="popLayout" initial={false}>
                 {historyNumbers.map((num) => (
                   <motion.div
                     key={num}
                     layout
                     initial={{ x: 50, opacity: 0, scale: 0.8 }}
-                    animate={{ x: 0, opacity: 0.5, scale: 1 }}
+                    animate={{ x: 0, opacity: 0.6, scale: 1 }}
                     exit={{ x: -50, opacity: 0, scale: 0.8 }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 300, 
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
                       damping: 30,
                       opacity: { duration: 0.2 }
                     }}
                   >
-                    <div className="opacity-80 grayscale-[0.3]">
-                      <BingoBall number={num} size="md" />
-                    </div>
+                    <BingoBall number={num} size="lg" />
                   </motion.div>
                 ))}
               </AnimatePresence>
             </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="px-10 py-6 bg-white/60 backdrop-blur-md rounded-full shadow-xl border border-white/50"
-            >
-              <p className="text-4xl font-bold text-amber-900 tabular-nums flex items-baseline gap-2">
-                Números sorteados: 
-                <span className="text-5xl text-amber-600 font-black">{calledNumbers.length}</span>
-                <span className="text-3xl text-amber-400/80">/</span>
-                <span className="text-3xl text-amber-800/60">90</span>
-              </p>
-            </motion.div>
           </motion.div>
         )}
 
