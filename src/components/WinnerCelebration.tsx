@@ -4,10 +4,13 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
+const CONFETTI_COLORS = ['#1e40af', '#dc2626', '#eab308', '#16a34a', '#9333ea', '#ea580c'];
+
 export function WinnerCelebration() {
   useEffect(() => {
     const duration = 5000;
     const end = Date.now() + duration;
+    let animationFrameId: number;
 
     const frame = () => {
       confetti({
@@ -15,30 +18,34 @@ export function WinnerCelebration() {
         angle: 60,
         spread: 55,
         origin: { x: 0, y: 0.7 },
-        colors: ['#1e40af', '#dc2626', '#eab308', '#16a34a', '#9333ea', '#ea580c'],
+        colors: CONFETTI_COLORS,
       });
       confetti({
         particleCount: 3,
         angle: 120,
         spread: 55,
         origin: { x: 1, y: 0.7 },
-        colors: ['#1e40af', '#dc2626', '#eab308', '#16a34a', '#9333ea', '#ea580c'],
+        colors: CONFETTI_COLORS,
       });
 
       if (Date.now() < end) {
-        requestAnimationFrame(frame);
+        animationFrameId = requestAnimationFrame(frame);
       }
     };
 
-    frame();
+    animationFrameId = requestAnimationFrame(frame);
 
     // Big burst at start
     confetti({
       particleCount: 100,
       spread: 100,
       origin: { x: 0.5, y: 0.5 },
-      colors: ['#1e40af', '#dc2626', '#eab308', '#16a34a', '#9333ea', '#ea580c'],
+      colors: CONFETTI_COLORS,
     });
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
