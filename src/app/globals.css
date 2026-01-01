@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+:root {
+  --color-bingo-blue: #1e40af;
+  --color-bingo-red: #dc2626;
+  --color-bingo-yellow: #eab308;
+  --color-bingo-green: #16a34a;
+  --color-bingo-purple: #9333ea;
+  --color-bingo-orange: #ea580c;
+  --color-bingo-cream: #fef3c7;
+}
